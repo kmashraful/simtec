@@ -26,9 +26,9 @@ Two-Scenario Comparison
 
 ## Interactive Controls
 
-Start/Reset Buttons: Control simulation playback
-Tsunami Arrival Time Slider: Adjust warning time (10-30 minutes)
-Walking Speed Slider: Simulate different population mobility (0.5-3.0 m/s)
+- Start/Reset Buttons: Control simulation playback
+- Tsunami Arrival Time Slider: Adjust warning time (10-30 minutes)
+- Walking Speed Slider: Simulate different population mobility (0.5-3.0 m/s)
 
 ## Visual Elements
 Zones
