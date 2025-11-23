@@ -1,13 +1,12 @@
 ### simtec
 ### Tsunami Evacuation Simulation: VES Impact Analysis
 ## Overview
-This interactive simulation demonstrates the critical importance of Vertical Evacuation Structures (VES) in coastal communities facing tsunami threats. Specifically designed for Western Ocean Shores, this educational tool compares evacuation outcomes with and without VES infrastructure.
+This interactive simulation demonstrates the critical importance of Vertical Evacuation Structures (VES) in coastal communities facing tsunami threats. This educational tool compares evacuation outcomes with and without VES infrastructure.
 
 ## Purpose
 The simulation aims to:
 
-Educate community members about tsunami evacuation challenges
-Demonstrate the life-saving impact of Vertical Evacuation Structures
+Educate community members about tsunami evacuation challengesDemonstrate the life-saving impact of Vertical Evacuation Structures
 Visualize evacuation dynamics under time-constrained scenarios
 Support planning decisions for coastal emergency infrastructure
 
