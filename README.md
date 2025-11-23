@@ -2,6 +2,7 @@
 # Tsunami Evacuation Simulation: Vertical Evacuation Structure (VES) Impact Analysis
 ## Overview
 This interactive simulation demonstrates the critical importance of Vertical Evacuation Structures (VES) in coastal communities facing tsunami threats. This educational tool compares evacuation outcomes with and without VES infrastructure.
+Click here to simulate: https://kmashraful.github.io/simtec/tsunami-ves-comparison.html
 
 ## Purpose
 The simulation aims to:
