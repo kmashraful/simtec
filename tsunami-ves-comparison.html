@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tsunami Evacuation Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #aaa;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .scenario {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .scenario-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .without {
+            border: 2px solid #e74c3c;
+        }
+        
+        .with {
+            border: 2px solid #27ae60;
+        }
+        
+        .canvas-container {
+            background: #0f3460;
+            border-radius: 8px;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        button {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin: 0 5px;
+        }
+        
+        button:hover {
+            background: #1b6ca8;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .stats {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        
+        .stat-label {
+            color: #aaa;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+        }
+        
+        .evacuated {
+            color: #27ae60;
+        }
+        
+        .not-evacuated {
+            color: #e74c3c;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Tsunami Evacuation Comparison</h1>
+        <p class="subtitle">A representative case example - Simulate evacuation scenarios</p>
+    </div>
+    
+    <div class="container">
+        <div class="scenario without">
+            <h2 class="scenario-title" style="color: #e74c3c;">WITHOUT Vertical Evacuation Structure</h2>
+            <div class="canvas-container">
+                <canvas id="canvasWithout"></canvas>
+            </div>
+            <div class="stats">
+                <div class="stat-row">
+                    <span class="stat-label">Time Elapsed:</span>
+                    <span class="stat-value" id="timeWithout">0:00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Evacuated to High Ground:</span>
+                    <span class="stat-value evacuated" id="evacuatedWithout">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Unable to Reach Safety:</span>
+                    <span class="stat-value not-evacuated" id="strandedWithout">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scenario with">
+            <h2 class="scenario-title" style="color: #27ae60;">WITH Vertical Evacuation Structure</h2>
+            <div class="canvas-container">
+                <canvas id="canvasWith"></canvas>
+            </div>
+            <div class="stats">
+                <div class="stat-row">
+                    <span class="stat-label">Time Elapsed:</span>
+                    <span class="stat-value" id="timeWith">0:00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Evacuated to Safety:</span>
+                    <span class="stat-value evacuated" id="evacuatedWith">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Unable to Reach Safety:</span>
+                    <span class="stat-value not-evacuated" id="strandedWith">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button id="startBtn">Start Simulation</button>
+        <button id="resetBtn">Reset</button>
+        <div style="margin-top: 20px; display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
+            <div>
+                <label for="tsunamiSpeed" style="margin-right: 10px;">Tsunami Arrival Time:</label>
+                <input type="range" id="tsunamiSpeed" min="10" max="30" value="20" step="1" style="width: 200px; vertical-align: middle;">
+                <span id="speedValue" style="margin-left: 10px;">20 min</span>
+            </div>
+            <div>
+                <label for="walkingSpeed" style="margin-right: 10px;">Walking Speed:</label>
+                <input type="range" id="walkingSpeed" min="0.5" max="3.0" value="1.5" step="0.1" style="width: 200px; vertical-align: middle;">
+                <span id="walkValue" style="margin-left: 10px;">1.5 m/s</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #3498db;"></div>
+            <span>Residents</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #27ae60;"></div>
+            <span>Evacuated</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #e74c3c;"></div>
+            <span>Stranded</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #1e90ff;"></div>
+            <span>Tsunami Wave</span>
+        </div>
+    </div>
+
+    <script>
+        const canvasWithout = document.getElementById('canvasWithout');
+        const canvasWith = document.getElementById('canvasWith');
+        const ctxWithout = canvasWithout.getContext('2d');
+        const ctxWith = canvasWith.getContext('2d');
+        
+        let animationId;
+        let isRunning = false;
+        let startTime;
+        
+        // Simulation parameters
+        const TOTAL_PEOPLE = 100;
+        let EVACUATION_TIME = 20; // seconds for simulation (represents 15-20 min)
+        let WALKING_SPEED_MULTIPLIER = 1.0; // Base multiplier for walking speed
+        const HIGH_GROUND_DISTANCE = 0.85; // 85% of canvas width
+        const VES_POSITIONS = [
+            { x: 0.30, y: 0.40 },
+            { x: 0.50, y: 0.65 }
+        ];
+        
+        function resizeCanvas(canvas) {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        resizeCanvas(canvasWithout);
+        resizeCanvas(canvasWith);
+        
+        class Person {
+            constructor(x, y, speed, target) {
+                this.startX = x;
+                this.startY = y;
+                this.x = x;
+                this.y = y;
+                this.speed = speed;
+                this.target = target;
+                this.evacuated = false;
+                this.stranded = false;
+                this.radius = 3;
+            }
+            
+            update(elapsed, tsunamiX) {
+                if (this.evacuated || this.stranded) return;
+                
+                // Check if caught by tsunami
+                if (this.x < tsunamiX) {
+                    this.stranded = true;
+                    return;
+                }
+                
+                // Move towards target
+                const dx = this.target.x - this.x;
+                const dy = this.target.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                // If reached target, mark as evacuated
+                if (dist < 10) {
+                    this.evacuated = true;
+                    return;
+                }
+                
+                // Move towards target
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            }
+            
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                if (this.evacuated) {
+                    ctx.fillStyle = '#27ae60';
+                } else if (this.stranded) {
+                    ctx.fillStyle = '#e74c3c';
+                } else {
+                    ctx.fillStyle = '#3498db';
+                }
+                ctx.fill();
+            }
+            
+            reset() {
+                this.x = this.startX;
+                this.y = this.startY;
+                this.evacuated = false;
+                this.stranded = false;
+            }
+        }
+        
+        let peopleWithout = [];
+        let peopleWith = [];
+        
+        function initPeople() {
+            peopleWithout = [];
+            peopleWith = [];
+            
+            // Create people with varied starting positions
+            // Some closer to safe zone (will make it), most farther away (won't make it)
+            for (let i = 0; i < TOTAL_PEOPLE; i++) {
+                let x, y;
+                
+                // 30% closer to safe zone (will reach in scenario 1)
+                // 70% farther away (won't reach in scenario 1)
+                if (i < 30) {
+                    // Closer to safe zone - these will make it even without VES
+                    x = canvasWithout.width * 0.5 + Math.random() * (canvasWithout.width * 0.25);
+                    y = 50 + Math.random() * (canvasWithout.height - 100);
+                } else {
+                    // Farther from safe zone - these need VES to survive
+                    x = 50 + Math.random() * (canvasWithout.width * 0.45);
+                    y = 50 + Math.random() * (canvasWithout.height - 100);
+                }
+                
+                // WITHOUT VES - everyone goes to high ground
+                const highGroundTarget = { 
+                    x: canvasWithout.width * (HIGH_GROUND_DISTANCE - 0.02), 
+                    y: canvasWithout.height * 0.3 + Math.random() * (canvasWithout.height * 0.4)
+                };
+                
+                // Speed varies by person - much slower base movement
+                const baseSpeed = 0.15 + Math.random() * 0.1;
+                const speed = baseSpeed * WALKING_SPEED_MULTIPLIER;
+                
+                peopleWithout.push(new Person(x, y, speed, highGroundTarget));
+                
+                // WITH VES - people go to nearest safe location
+                const ves1 = { 
+                    x: canvasWith.width * VES_POSITIONS[0].x, 
+                    y: canvasWith.height * VES_POSITIONS[0].y - 30
+                };
+                const ves2 = { 
+                    x: canvasWith.width * VES_POSITIONS[1].x, 
+                    y: canvasWith.height * VES_POSITIONS[1].y - 30
+                };
+                const highGround = { 
+                    x: canvasWith.width * (HIGH_GROUND_DISTANCE - 0.02), 
+                    y: canvasWith.height * 0.3 + Math.random() * (canvasWith.height * 0.4)
+                };
+                
+                // Calculate distances to each safe location
+                const distVes1 = Math.sqrt((x - ves1.x)**2 + (y - ves1.y)**2);
+                const distVes2 = Math.sqrt((x - ves2.x)**2 + (y - ves2.y)**2);
+                const distHigh = Math.sqrt((x - highGround.x)**2 + (y - highGround.y)**2);
+                
+                // Go to closest safe location
+                let target = highGround;
+                let minDist = distHigh;
+                if (distVes1 < minDist) {
+                    target = ves1;
+                    minDist = distVes1;
+                }
+                if (distVes2 < minDist) {
+                    target = ves2;
+                    minDist = distVes2;
+                }
+                
+                peopleWith.push(new Person(x, y, speed, target));
+            }
+        }
+        
+        function updatePeopleSpeeds() {
+            peopleWithout.forEach(person => {
+                const baseSpeed = 0.15 + Math.random() * 0.1;
+                person.speed = baseSpeed * WALKING_SPEED_MULTIPLIER;
+            });
+            peopleWith.forEach(person => {
+                const baseSpeed = 0.15 + Math.random() * 0.1;
+                person.speed = baseSpeed * WALKING_SPEED_MULTIPLIER;
+            });
+        }
+        
+        function drawScene(ctx, canvas, hasVES, people, elapsed) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw hazard zone (entire lower area)
+            ctx.fillStyle = '#3d2a2a';
+            ctx.fillRect(0, 0, canvas.width * 0.82, canvas.height);
+            
+            // Draw hazard zone label
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('HAZARD ZONE', 20, 30);
+            
+            // Draw safe zone (high ground)
+            ctx.fillStyle = '#2d5a2d';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * HIGH_GROUND_DISTANCE, 0);
+            ctx.lineTo(canvas.width * HIGH_GROUND_DISTANCE - 80, canvas.height);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(canvas.width, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw safe zone label
+            ctx.fillStyle = '#90ee90';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('SAFE ZONE', canvas.width * HIGH_GROUND_DISTANCE - 60, canvas.height - 80);
+            ctx.fillText('(High Ground)', canvas.width * HIGH_GROUND_DISTANCE - 60, canvas.height - 60);
+            
+            // Draw VES structures if applicable
+            if (hasVES) {
+                VES_POSITIONS.forEach((pos, idx) => {
+                    const vesX = canvas.width * pos.x;
+                    const vesY = canvas.height * pos.y;
+                    
+                    // VES building
+                    ctx.fillStyle = '#95a5a6';
+                    ctx.fillRect(vesX - 20, vesY - 80, 40, 100);
+                    
+                    // VES floors
+                    ctx.strokeStyle = '#555';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 6; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(vesX - 20, vesY - 80 + i * 16);
+                        ctx.lineTo(vesX + 20, vesY - 80 + i * 16);
+                        ctx.stroke();
+                    }
+                    
+                    // VES roof
+                    ctx.fillStyle = '#7f8c8d';
+                    ctx.beginPath();
+                    ctx.moveTo(vesX - 25, vesY - 80);
+                    ctx.lineTo(vesX, vesY - 95);
+                    ctx.lineTo(vesX + 25, vesY - 80);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // VES label
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillText(`VES ${idx + 1}`, vesX - 18, vesY + 30);
+                    
+                    // Safe radius indicator
+                    ctx.strokeStyle = 'rgba(144, 238, 144, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.arc(vesX, vesY, 30, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                });
+            }
+            
+            // Draw ocean
+            ctx.fillStyle = '#1a3a52';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Ocean', 10, canvas.height - 15);
+            
+            // Draw tsunami wave
+            const tsunamiProgress = Math.min(elapsed / EVACUATION_TIME, 1);
+            const tsunamiX = tsunamiProgress * canvas.width * 0.90;
+            
+            ctx.fillStyle = 'rgba(30, 144, 255, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 40);
+            ctx.lineTo(tsunamiX, canvas.height - 40);
+            ctx.lineTo(tsunamiX, 0);
+            ctx.lineTo(0, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw wave front with animation
+            ctx.strokeStyle = '#1e90ff';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = '#1e90ff';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(tsunamiX, 0);
+            ctx.lineTo(tsunamiX, canvas.height - 40);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // Wave label
+            if (tsunamiX > 50) {
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillText('TSUNAMI', tsunamiX - 45, 20);
+            }
+            
+            return tsunamiX;
+        }
+        
+        function animate() {
+            if (!isRunning) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            
+            if (elapsed >= EVACUATION_TIME) {
+                isRunning = false;
+                updateStats(EVACUATION_TIME);
+                return;
+            }
+            
+            // Update and draw without VES
+            const tsunamiXWithout = drawScene(ctxWithout, canvasWithout, false, peopleWithout, elapsed);
+            peopleWithout.forEach(p => {
+                p.update(elapsed, tsunamiXWithout);
+                p.draw(ctxWithout);
+            });
+            
+            // Update and draw with VES
+            const tsunamiXWith = drawScene(ctxWith, canvasWith, true, peopleWith, elapsed);
+            peopleWith.forEach(p => {
+                p.update(elapsed, tsunamiXWith);
+                p.draw(ctxWith);
+            });
+            
+            updateStats(elapsed);
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function updateStats(elapsed) {
+            const minutes = Math.floor(elapsed);
+            const seconds = Math.floor((elapsed % 1) * 60);
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')} min`;
+            
+            document.getElementById('timeWithout').textContent = timeStr;
+            document.getElementById('timeWith').textContent = timeStr;
+            
+            const evacuatedWithout = peopleWithout.filter(p => p.evacuated).length;
+            const strandedWithout = peopleWithout.filter(p => p.stranded).length;
+            document.getElementById('evacuatedWithout').textContent = evacuatedWithout;
+            document.getElementById('strandedWithout').textContent = strandedWithout;
+            
+            const evacuatedWith = peopleWith.filter(p => p.evacuated).length;
+            const strandedWith = peopleWith.filter(p => p.stranded).length;
+            document.getElementById('evacuatedWith').textContent = evacuatedWith;
+            document.getElementById('strandedWith').textContent = strandedWith;
+        }
+        
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (isRunning) return;
+            
+            if (peopleWithout.length === 0) {
+                initPeople();
+            }
+            
+            isRunning = true;
+            startTime = Date.now();
+            animate();
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            
+            initPeople();
+            
+            drawScene(ctxWithout, canvasWithout, false, peopleWithout, 0);
+            drawScene(ctxWith, canvasWith, true, peopleWith, 0);
+            
+            peopleWithout.forEach(p => p.draw(ctxWithout));
+            peopleWith.forEach(p => p.draw(ctxWith));
+            
+            updateStats(0);
+        });
+        
+        // Tsunami speed control
+        document.getElementById('tsunamiSpeed').addEventListener('input', (e) => {
+            EVACUATION_TIME = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = EVACUATION_TIME + ' min';
+            
+            // Reset if changed during simulation
+            if (isRunning) {
+                isRunning = false;
+                if (animationId) cancelAnimationFrame(animationId);
+                initPeople();
+                drawScene(ctxWithout, canvasWithout, false, peopleWithout, 0);
+                drawScene(ctxWith, canvasWith, true, peopleWith, 0);
+                peopleWithout.forEach(p => p.draw(ctxWithout));
+                peopleWith.forEach(p => p.draw(ctxWith));
+                updateStats(0);
+            }
+        });
+        
+        // Walking speed control
+        document.getElementById('walkingSpeed').addEventListener('input', (e) => {
+            const walkSpeed = parseFloat(e.target.value);
+            document.getElementById('walkValue').textContent = walkSpeed.toFixed(1) + ' m/s';
+            
+            // Map 0.5-3.0 m/s to speed multiplier (0.5 m/s = 0.33x, 1.5 m/s = 1.0x, 3.0 m/s = 2.0x)
+            WALKING_SPEED_MULTIPLIER = walkSpeed / 1.5;
+            
+            // Update speeds if people exist
+            if (peopleWithout.length > 0) {
+                updatePeopleSpeeds();
+            }
+            
+            // Reset if changed during simulation
+            if (isRunning) {
+                isRunning = false;
+                if (animationId) cancelAnimationFrame(animationId);
+                drawScene(ctxWithout, canvasWithout, false, peopleWithout, 0);
+                drawScene(ctxWith, canvasWith, true, peopleWith, 0);
+                peopleWithout.forEach(p => {
+                    p.reset();
+                    p.draw(ctxWithout);
+                });
+                peopleWith.forEach(p => {
+                    p.reset();
+                    p.draw(ctxWith);
+                });
+                updateStats(0);
+            }
+        });
+        
+        // Initialize
+        initPeople();
+        drawScene(ctxWithout, canvasWithout, false, peopleWithout, 0);
+        drawScene(ctxWith, canvasWith, true, peopleWith, 0);
+        peopleWithout.forEach(p => p.draw(ctxWithout));
+        peopleWith.forEach(p => p.draw(ctxWith));
+        updateStats(0);
+        
+        window.addEventListener('resize', () => {
+            resizeCanvas(canvasWithout);
+            resizeCanvas(canvasWith);
+            if (!isRunning) {
+                drawScene(ctxWithout, canvasWithout, false, peopleWithout, 0);
+                drawScene(ctxWith, canvasWith, true, peopleWith, 0);
+                peopleWithout.forEach(p => p.draw(ctxWithout));
+                peopleWith.forEach(p => p.draw(ctxWith));
+            }
+        });
+    </script>
+</body>
+</html>
